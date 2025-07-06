@@ -1,0 +1,31 @@
+{
+	"backends":
+	{
+		"lmstudio":
+		{
+			"url": "http://127.0.0.1:1234",
+			"max_loaded_models": 1
+		}
+	},
+
+	"models":
+	{
+		"openhermes-2.5-mistral-7b":
+		{
+			"backend": "lmstudio",
+			"temperature": 0.7,
+			"context_length": 32768,
+			"max_tokens": 16384,
+			"gpu_ratio": 1.0
+		},
+
+		"codeqwen1.5-7b-chat":
+		{
+			"backend": "lmstudio",
+			"temperature": 0.2,
+			"context_length": 32768,
+			"max_tokens": 16384,
+			"gpu_ratio": 1.0
+		}
+	}
+}
