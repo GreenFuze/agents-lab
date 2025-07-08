@@ -66,6 +66,18 @@ Before creating anything, validate ALL requirements:
   - `char_to_token_ratio: 4`
 - Adjust based on agent's expected conversation length
 
+#### Scratchpad Configuration (Optional)
+- **Default values**:
+  - `enabled: true` - Enable scratchpad reasoning
+  - `max_iterations: 5` - Maximum reasoning iterations
+  - `score_lower_bound: 70` - Minimum score for completion
+  - `similarity_threshold: 0.9` - Similarity threshold for convergence
+  - `unchanged_limit: 2` - Max unchanged iterations before stopping
+- **When to adjust**: 
+  - Disable for simple agents that don't need complex reasoning
+  - Increase max_iterations for complex planning tasks
+  - Lower score_lower_bound for creative tasks
+
 #### Schema/Grammar Configuration
 - **Prefer schema over grammar** if backend supports it
 - **Schema**: Use `schemas/response.schema.json` if backend supports
@@ -85,6 +97,7 @@ Before creating anything, validate ALL requirements:
      - temperature, max_tokens, stop_strings (comma-separated)
      - summarization_threshold, percentage_to_summarize, char_to_token_ratio
      - Optional: schema, grammar, seed_prompts_file
+     - Optional scratchpad parameters: scratchpad_enabled, scratchpad_max_iterations, scratchpad_score_lower_bound, scratchpad_similarity_threshold, scratchpad_unchanged_limit
 
 3. **Create Seed Prompts** (if needed):
    - Use `agent_management.create_seed_prompts_file` to create `seeds/[agent_name].json`

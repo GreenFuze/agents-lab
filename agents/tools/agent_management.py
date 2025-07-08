@@ -298,7 +298,9 @@ def add_agent(agent_name: str, model: str, prompts: str, tools: str,
               temperature: float, max_tokens: int, stop_strings: str,
               summarization_threshold: float, percentage_to_summarize: float, 
               char_to_token_ratio: int, schema: Optional[str] = None, grammar: Optional[str] = None, 
-              seed_prompts_file: Optional[str] = None) -> tool_return_prompt:
+              seed_prompts_file: Optional[str] = None, scratchpad_enabled: bool = True,
+              scratchpad_max_iterations: int = 5, scratchpad_score_lower_bound: int = 70,
+              scratchpad_similarity_threshold: float = 0.9, scratchpad_unchanged_limit: int = 2) -> tool_return_prompt:
 	"""
 	Add a new agent configuration to agents.yaml.
 	Args:
@@ -315,6 +317,11 @@ def add_agent(agent_name: str, model: str, prompts: str, tools: str,
 		schema: Optional schema file path
 		grammar: Optional grammar file path
 		seed_prompts_file: Optional seed prompts file path
+		scratchpad_enabled: Enable scratchpad reasoning (default: True)
+		scratchpad_max_iterations: Maximum reasoning iterations (default: 5)
+		scratchpad_score_lower_bound: Minimum score for completion (default: 70)
+		scratchpad_similarity_threshold: Similarity threshold for convergence (default: 0.9)
+		scratchpad_unchanged_limit: Max unchanged iterations before stopping (default: 2)
 	Returns:
 		Result of the operation
 	"""
@@ -362,6 +369,13 @@ def add_agent(agent_name: str, model: str, prompts: str, tools: str,
 				'summarization_threshold': summarization_threshold,
 				'percentage_to_summarize': percentage_to_summarize,
 				'char_to_token_ratio': char_to_token_ratio
+			},
+			'scratchpad_config': {
+				'enabled': scratchpad_enabled,
+				'max_iterations': scratchpad_max_iterations,
+				'score_lower_bound': scratchpad_score_lower_bound,
+				'similarity_threshold': scratchpad_similarity_threshold,
+				'unchanged_limit': scratchpad_unchanged_limit
 			},
 			'prompts': prompts_list,
 			'tools': tools_list if tools_list else None

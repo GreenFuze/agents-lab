@@ -10,6 +10,7 @@ class PromptType(Enum):
 	DELEGATE_BACK = "DELEGATE_BACK"
 	USE_TOOL = "USE_TOOL"
 	TOOL_RETURN = "TOOL_RETURN"
+	REFINEMENT_RESPONSE = "REFINEMENT_RESPONSE"
 
 
 DELEGATION_PROMPT = """
@@ -291,4 +292,116 @@ class tool_return_prompt:
  
 	def __repr__(self) -> str:
 		return f"ToolReturnPrompt(data={self._parsed_data})"
+
+
+REFINEMENT_RESPONSE_PROMPT = """
+# REFINEMENT RESPONSE GUIDELINES AND FORMAT:
+- When you need to provide a refinement response, write the following JSON:
+```json
+{
+	"action": "REFINEMENT_RESPONSE",
+	"new_plan": "[Your refined plan here]",
+	"done": "[yes or no]",
+	"score": [0-100],
+	"why": "[brief justification (≤40 tokens)]",
+	"checklist": {
+		"objective": [true or false],
+		"inputs": [true or false],
+		"outputs": [true or false],
+		"constraints": [true or false]
+	},
+	"success": [true or false]
+}
+```
+Make sure it is a valid JSON object.
+Return only the JSON object, no other text!
+"""
+
+class refinement_response_prompt:
+	def __init__(self, json_data: Optional[Dict[str, Any]] = None):
+		if json_data is None:
+			json_data = {
+				"action": "REFINEMENT_RESPONSE",
+				"new_plan": "",
+				"done": "no",
+				"score": 0,
+				"why": "",
+				"checklist": {"objective": False, "inputs": False, "outputs": False, "constraints": False},
+				"success": False
+			}
+		self._parsed_data = self._validate(json_data)
+	
+	def _validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+		required_fields = ["action", "new_plan", "done", "score", "why", "checklist", "success"]
+		for field in required_fields:
+			if field not in data:
+				raise InvalidTaskStructureError(f"Missing required field: {field}")
+		
+		if data["action"] != "REFINEMENT_RESPONSE":
+			raise InvalidTaskStructureError("Action must be 'REFINEMENT_RESPONSE'")
+		
+		if not isinstance(data["new_plan"], str):
+			raise InvalidTaskStructureError("new_plan must be a string")
+		
+		if data["done"] not in ["yes", "no"]:
+			raise InvalidTaskStructureError("done must be 'yes' or 'no'")
+		
+		if not isinstance(data["score"], int) or data["score"] < 0 or data["score"] > 100:
+			raise InvalidTaskStructureError("score must be an integer between 0 and 100")
+		
+		if not isinstance(data["why"], str):
+			raise InvalidTaskStructureError("why must be a string")
+		
+		if not isinstance(data["checklist"], dict):
+			raise InvalidTaskStructureError("checklist must be a dictionary")
+		
+		required_checklist_fields = ["objective", "inputs", "outputs", "constraints"]
+		for field in required_checklist_fields:
+			if field not in data["checklist"]:
+				raise InvalidTaskStructureError(f"checklist missing required field: {field}")
+			if not isinstance(data["checklist"][field], bool):
+				raise InvalidTaskStructureError(f"checklist.{field} must be a boolean")
+		
+		if not isinstance(data["success"], bool):
+			raise InvalidTaskStructureError("success must be a boolean")
+		
+		return data
+	
+	@property
+	def action(self) -> str:
+		return self._parsed_data["action"]
+	
+	@property
+	def new_plan(self) -> str:
+		return self._parsed_data["new_plan"]
+	
+	@property
+	def done(self) -> str:
+		return self._parsed_data["done"]
+	
+	@property
+	def score(self) -> int:
+		return self._parsed_data["score"]
+	
+	@property
+	def why(self) -> str:
+		return self._parsed_data["why"]
+	
+	@property
+	def checklist(self) -> Dict[str, bool]:
+		return self._parsed_data["checklist"].copy()
+	
+	@property
+	def success(self) -> bool:
+		return self._parsed_data["success"]
+	
+	@property
+	def parsed_data(self) -> Dict[str, Any]:
+		return self._parsed_data.copy()
+	
+	def as_json(self) -> str:
+		return json.dumps(self._parsed_data, indent=4)
+ 
+	def __repr__(self) -> str:
+		return f"RefinementResponsePrompt(data={self._parsed_data})"
 

@@ -21,3 +21,7 @@ You must respond using one of the following action types:
 5. **DELEGATE_BACK**
    Use when returning to a previously delegating agent.  
    Fields: `"return_to_agent"`, `"return_from_agent"`, `"reason"`, `"success"`.
+
+6. **REFINEMENT_RESPONSE**
+   Use when providing a refined plan during scratchpad reasoning.  
+   Fields: `"new_plan"`, `"done"` (yes/no), `"score"` (0-100), `"why"`, `"checklist"` (objective/inputs/outputs/constraints), `"success"`.

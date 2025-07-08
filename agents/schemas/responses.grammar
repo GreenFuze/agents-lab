@@ -1,19 +1,21 @@
 # ---------------------------------------------------------------
 #  agent_reply.grammar  –  constrain model to one valid reply
 # ---------------------------------------------------------------
-#  Five mutually-exclusive JSON objects:
+#  Six mutually-exclusive JSON objects:
 #    • NORMAL_RESPONSE
 #    • USE_TOOL
 #    • TOOL_RETURN
 #    • DELEGATE_TASK
 #    • DELEGATE_BACK
+#    • REFINEMENT_RESPONSE
 # ---------------------------------------------------------------
 
 root            ::= _ ( normal_response
                      | use_tool
                      | tool_return
                      | delegate_task
-                     | delegate_back ) _
+                     | delegate_back
+                     | refinement_response ) _
 
 # ---------- COMMON TERMINALS -----------------------------------
 _               ::= [ \t\r\n]*              # any whitespace
@@ -63,3 +65,17 @@ delegate_back   ::= "{" _ "\"action\""         _ ":" _ "\"DELEGATE_BACK\"" _
                     "," _ "\"return_from_agent\"" _ ":" _ string _
                     "," _ "\"reason\""          _ ":" _ string _
                     "," _ "\"success\""         _ ":" _ bool   _ "}"
+
+# ---------- REFINEMENT_RESPONSE ----------------------------------
+refinement_response ::= "{" _ "\"action\""      _ ":" _ "\"REFINEMENT_RESPONSE\"" _
+                        "," _ "\"new_plan\""    _ ":" _ string _
+                        "," _ "\"done\""        _ ":" _ ("\"yes\"" | "\"no\"") _
+                        "," _ "\"score\""       _ ":" _ number _
+                        "," _ "\"why\""         _ ":" _ string _
+                        "," _ "\"checklist\""   _ ":" _ checklist_object _
+                        "," _ "\"success\""     _ ":" _ bool _ "}"
+
+checklist_object ::= "{" _ "\"objective\""   _ ":" _ bool _
+                     "," _ "\"inputs\""      _ ":" _ bool _
+                     "," _ "\"outputs\""     _ ":" _ bool _
+                     "," _ "\"constraints\"" _ ":" _ bool _ "}"

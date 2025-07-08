@@ -46,13 +46,11 @@ class ModelsPool:
 			for backend_name, backend_data in backends_config.items():
 				backend_info = BackendInfo(
 					name=backend_name,
-					base_url=backend_data['url']
+					base_url=backend_data['url'],
+					support_schema=backend_data.get('support_schema', False),
+					support_grammar=backend_data.get('support_grammar', False),
+					max_loaded_models=backend_data.get('max_loaded_models')
 				)
-				
-				# Add any additional fields from the JSON as attributes
-				for key, value in backend_data.items():
-					if not hasattr(backend_info, key):  # Skip attributes that already exist
-						setattr(backend_info, key, value)
 				
 				self.backends[backend_name] = backend_info
 			

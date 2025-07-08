@@ -1,6 +1,6 @@
 import json
 from typing import Dict
-from agents.agent import Agent
+from agents.agent import Agent, ScratchpadConfig
 from agents.exceptions import *
 from models.bases import InferenceConfig, SummarizationConfig
 from models.models_pool import ModelsPoolInstance
@@ -81,6 +81,16 @@ class AgentsPool:
 			assert summarization_config.char_to_token_ratio is not None, f"Char to token ratio not specified for agent {agent_name}. Please add a 'char_to_token_ratio' field in the summarization_config section of the agents.yaml file."
 			assert summarization_config.percentage_to_summarize is not None, f"Percentage to summarize not specified for agent {agent_name}. Please add a 'percentage_to_summarize' field in the summarization_config section of the agents.yaml file."
 			
+			# Create scratchpad config
+			scratchpad_config_data = agent_config.get('scratchpad_config', {})
+			scratchpad_config = ScratchpadConfig(
+				enabled=scratchpad_config_data.get('enabled', True),
+				max_iterations=scratchpad_config_data.get('max_iterations', 5),
+				score_lower_bound=scratchpad_config_data.get('score_lower_bound', 70),
+				similarity_threshold=scratchpad_config_data.get('similarity_threshold', 0.9),
+				unchanged_limit=scratchpad_config_data.get('unchanged_limit', 2)
+			)
+			
 			# Create agent instance
 			agent = Agent(
 				name=agent_name,
@@ -88,7 +98,8 @@ class AgentsPool:
 				system_prompt=system_prompt,
 				seed_prompts=seed_prompts,
 				inference_config=inference_config,
-				summarization_config=summarization_config
+				summarization_config=summarization_config,
+				scratchpad_config=scratchpad_config
 			)
 			
 			# Add to pool

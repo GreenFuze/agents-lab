@@ -72,6 +72,32 @@
 		  "success":           { "type": "boolean" }
 		},
 		"additionalProperties": false
+	  },
+
+	  {
+		"title": "REFINEMENT_RESPONSE",
+		"type": "object",
+		"required": ["action", "new_plan", "done", "score", "why", "checklist", "success"],
+		"properties": {
+		  "action":     { "const": "REFINEMENT_RESPONSE" },
+		  "new_plan":   { "type": "string" },
+		  "done":       { "type": "string", "enum": ["yes", "no"] },
+		  "score":      { "type": "integer", "minimum": 0, "maximum": 100 },
+		  "why":        { "type": "string" },
+		  "checklist":  {
+			"type": "object",
+			"required": ["objective", "inputs", "outputs", "constraints"],
+			"properties": {
+			  "objective":   { "type": "boolean" },
+			  "inputs":      { "type": "boolean" },
+			  "outputs":     { "type": "boolean" },
+			  "constraints": { "type": "boolean" }
+			},
+			"additionalProperties": false
+		  },
+		  "success":    { "type": "boolean" }
+		},
+		"additionalProperties": false
 	  }
 	]
   }

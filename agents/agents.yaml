@@ -12,6 +12,12 @@ agents:
             summarization_threshold: 0.8 # if history takes more than this percentage of the context window, summarize it
             percentage_to_summarize: 0.8 # how much of the history to summarize from least recent
             char_to_token_ratio: 4 # how many characters are a token (for estimation of tokens)
+        scratchpad_config: # optional - scratchpad reasoning configuration
+            enabled: true # default: true
+            max_iterations: 5 # default: 5
+            score_lower_bound: 70 # default: 70
+            similarity_threshold: 0.9 # default: 0.9
+            unchanged_limit: 2 # default: 2
         prompts: # appended from first to last
             - prompts/base_system.md # always first
             - prompts/responses.md # always second
