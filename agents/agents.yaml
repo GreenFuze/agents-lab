@@ -1,0 +1,20 @@
+agents:
+    zeus:
+        model: codeqwen1.5-7b-chat
+        seed_prompts_file: null # not required if there's schema or grammar
+        grammar: null # not required if there's schema
+        schema: schemas/response.schema.json
+        inference_config:
+            temperature: 0.7
+            max_tokens: 16384
+            stop_strings: ["<|im_end|>"]
+        summarization_config:
+            summarization_threshold: 0.8 # if history takes more than this percentage of the context window, summarize it
+            percentage_to_summarize: 0.8 # how much of the history to summarize from least recent
+            char_to_token_ratio: 4 # how many characters are a token (for estimation of tokens)
+        prompts: # appended from first to last
+            - prompts/base_system.md # always first
+            - prompts/responses.md # always second
+        tools: # prompts for tools will be automatically generated and appended
+            - file_tools.read_file
+            - file_tools.write_file

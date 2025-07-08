@@ -5,6 +5,12 @@ from models.bases import *
 from models.lmstudio import LMStudioClient
 
 
+class ModelNotFoundError(Exception):
+	def __init__(self, model_name: str):
+		self.model_name = model_name
+		super().__init__(f"Model '{model_name}' not found")
+
+
 class ModelsPool:
 	"""Manages intelligent model switching for the agent system""" 
 	def __init__(self, models_json_path: str):
@@ -61,10 +67,10 @@ class ModelsPool:
 				model_info = ModelInfo(
 					backend_info=backend_info,
 					model_name=model_name,
-					temperature=model_data['temperature'],
+					key=model_data['key'],
 					context_length=model_data['context_length'],
-					max_tokens=model_data['max_tokens'],
-					gpu_ratio=model_data['gpu_ratio']
+					gpu_ratio=model_data['gpu_ratio'],
+					stop_strings=model_data.get('stop_strings')	# optional
 				)
     
 				# Add any additional fields from the JSON as attributes
@@ -82,12 +88,22 @@ class ModelsPool:
 			raise ValueError(f"Missing required field in models configuration: {e}")
  
   
-	def ensure_model_loaded(self, model_name: str) -> ModelInstanceBase:
+	def ensure_model_loaded(self, model_info: ModelInfo) -> ModelInstanceBase:
 		"""Ensure the optimal model for an agent is loaded"""
-		model_info = self.models[model_name]
 		return self.backend_clients[model_info.backend_info.name].load_model(model_info)
 
-	def cleanup(self):
+
+	def get_model_by_name(self, model_name: str) -> ModelInfo:
+		"""Get a model by name"""
+		if model_name not in self.models:
+			raise ModelNotFoundError(model_name)
+		return self.models[model_name]
+
+	def get_all_models(self) -> Dict[str, ModelInfo]:
+		"""Get all models names"""
+		return self.models
+
+	def cleanup(self) -> None:
 		"""Clean up resources and unload models"""
 		# iterate every backend and unload all models
 		for _, backend_client in self.backend_clients.items():

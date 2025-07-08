@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------
+#  agent_reply.grammar  –  constrain model to one valid reply
+# ---------------------------------------------------------------
+#  Five mutually-exclusive JSON objects:
+#    • NORMAL_RESPONSE
+#    • USE_TOOL
+#    • TOOL_RETURN
+#    • DELEGATE_TASK
+#    • DELEGATE_BACK
+# ---------------------------------------------------------------
+
+root            ::= _ ( normal_response
+                     | use_tool
+                     | tool_return
+                     | delegate_task
+                     | delegate_back ) _
+
+# ---------- COMMON TERMINALS -----------------------------------
+_               ::= [ \t\r\n]*              # any whitespace
+string          ::= ESCAPED_STRING          # built-in quoted string
+number          ::= NUMBER                  # built-in JSON number
+bool            ::= "true" | "false"
+null            ::= "null"
+
+value           ::= string
+                 | number
+                 | object
+                 | array
+                 | bool
+                 | null
+
+array           ::= "[" _ ( value ( _ "," _ value )* )? _ "]"
+pair            ::= string _ ":" _ value
+object          ::= "{" _ ( pair ( _ "," _ pair )* )? _ "}"
+
+# ---------- NORMAL_RESPONSE ------------------------------------
+normal_response ::= "{" _ "\"action\"" _ ":" _ "\"NORMAL_RESPONSE\"" _
+                    "," _ "\"response\"" _ ":" _ string _ "}"
+
+# ---------- USE_TOOL -------------------------------------------
+args_object     ::= "{" _ ( pair ( _ "," _ pair )* )? _ "}"
+
+use_tool        ::= "{" _ "\"action\"" _ ":" _ "\"USE_TOOL\"" _
+                    "," _ "\"tool\""   _ ":" _ string _
+                    "," _ "\"args\""   _ ":" _ args_object _ "}"
+
+# ---------- TOOL_RETURN ----------------------------------------
+tool_return     ::= "{" _ "\"action\"" _ ":" _ "\"TOOL_RETURN\"" _
+                    "," _ "\"tool\""    _ ":" _ string _
+                    "," _ "\"result\""  _ ":" _ string _
+                    "," _ "\"success\"" _ ":" _ bool _ "}"
+
+# ---------- DELEGATE_TASK --------------------------------------
+delegate_task   ::= "{" _ "\"action\""      _ ":" _ "\"DELEGATE_TASK\"" _
+                    "," _ "\"agent\""       _ ":" _ string _
+                    "," _ "\"caller_agent\"" _ ":" _ string _
+                    "," _ "\"reason\""      _ ":" _ string _
+                    "," _ "\"user_input\""  _ ":" _ string _ "}"
+
+# ---------- DELEGATE_BACK --------------------------------------
+delegate_back   ::= "{" _ "\"action\""         _ ":" _ "\"DELEGATE_BACK\"" _
+                    "," _ "\"return_to_agent\"" _ ":" _ string _
+                    "," _ "\"return_from_agent\"" _ ":" _ string _
+                    "," _ "\"reason\""          _ ":" _ string _
+                    "," _ "\"success\""         _ ":" _ bool   _ "}"

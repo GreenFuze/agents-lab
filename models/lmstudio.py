@@ -7,10 +7,10 @@ Only to:
 """
 
 import lmstudio as lms
-from lmstudio._sdk_models import GpuSetting
-from typing import Dict, Any, Optional
+from lmstudio._sdk_models import GpuSetting, LlmPredictionConfig, LlmStructuredPredictionSetting
+from typing import Dict, Iterator, List, Any, Optional, Tuple, cast
 
-from models.bases import BackendClientBase, ModelInfo, ModelInstanceBase
+from models.bases import BackendClientBase, InferenceConfig, ModelInfo, ModelInstanceBase
 
 
 class LMStudioModelInstance(ModelInstanceBase):
@@ -31,6 +31,55 @@ class LMStudioModelInstance(ModelInstanceBase):
 		# Count tokens using the model's tokenizer
 		return len(self.lms_llm.tokenize(text))
 
+	def _get_inference_configs(self, config: InferenceConfig) -> Tuple[LlmPredictionConfig, Optional[LlmStructuredPredictionSetting]]:
+		"""
+		Get the inference configs for the specified model.
+		"""
+		prediction_config = LlmPredictionConfig(
+			max_tokens=config.max_tokens,
+			temperature=config.temperature,
+			stop_strings=config.stop_strings
+		)
+		response_format = None
+		if config.schema: # prioritize schema over grammar
+			response_format = LlmStructuredPredictionSetting(
+				type="json",
+				json_schema=config.schema
+			)
+		elif config.grammar:
+			response_format = LlmStructuredPredictionSetting(
+				type="gbnf",
+				gbnf_grammar=config.grammar
+			)
+		return prediction_config, response_format
+
+	def complete(self, prompt: str, config: InferenceConfig) -> str:
+		"""
+		Complete a prompt using the specified model.
+		"""
+		prediction_config, response_format = self._get_inference_configs(config)
+  
+		return self.lms_llm.complete(prompt, config=prediction_config, response_format=response_format).content
+
+	def complete_stream(self, prompt: str, config: InferenceConfig) -> Iterator[str]:
+		"""
+		Complete a prompt using the specified model.
+		"""
+		prediction_config, response_format = self._get_inference_configs(config)
+  
+		chunks = self.lms_llm.complete_stream(prompt, config=prediction_config, response_format=response_format)
+		for chunk in chunks:
+			if chunk.content:
+				if not chunk.contains_drafted:
+					yield chunk.content
+     
+	def apply_prompt_template(self, messages: List[Dict[str, Any]]) -> str:
+		"""
+		Apply the prompt template to the prompt.
+		"""
+		return self.lms_llm.apply_prompt_template(cast(lms.ChatHistoryDataDict,{"messages": messages}))
+    
+	
 
 class LMStudioClient(BackendClientBase):
 	def __init__(self, base_url: Optional[str] = None):
@@ -47,7 +96,7 @@ class LMStudioClient(BackendClientBase):
 		assert "lmstudio" in model_info.backend_info.name
 		assert model_info.backend_info.max_loaded_models is not None
      
-		# Check if model is loaded, and that the context window size and temperature are correct
+		# Check if model is loaded - including the same configuration
 		if model_info.model_name in self.loaded_models:
 			# check if the model was loaded with the requested configuration
 			loaded_model = self.loaded_models[model_info.model_name]
@@ -67,7 +116,7 @@ class LMStudioClient(BackendClientBase):
 		)
 
 		return LMStudioModelInstance(model_info=model_info,
-                               lms_llm=lms.llm(model_info.model_name, config=load_cfg),
+                               lms_llm=lms.llm(model_info.key, config=load_cfg),
                                load_config=load_cfg)
 
 	def unload_all_models(self):
@@ -98,3 +147,4 @@ class LMStudioClient(BackendClientBase):
 		Check the balance of the model - return None as not relevant
 		"""
 		return None
+	

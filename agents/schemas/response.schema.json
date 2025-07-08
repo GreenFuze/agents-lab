@@ -1,0 +1,78 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Agent Reply",
+	"description": "Exactly one JSON object describing the agent's action.",
+	"type": "object",
+  
+	"oneOf": [
+	  {
+		"title": "NORMAL_RESPONSE",
+		"type": "object",
+		"required": ["action", "response"],
+		"properties": {
+		  "action":   { "const": "NORMAL_RESPONSE" },
+		  "response": { "type": "string" }
+		},
+		"additionalProperties": false
+	  },
+  
+	  {
+		"title": "USE_TOOL",
+		"type": "object",
+		"required": ["action", "tool", "args"],
+		"properties": {
+		  "action": { "const": "USE_TOOL" },
+		  "tool":   { "type": "string" },
+  
+		  "args": {
+			"description": "Tool-specific named arguments.",
+			"type": "object",
+			"additionalProperties": { "type": ["string", "number", "boolean", "object", "array", "null"] }
+		  }
+		},
+		"additionalProperties": false
+	  },
+  
+	  {
+		"title": "TOOL_RETURN",
+		"type": "object",
+		"required": ["action", "tool", "result", "success"],
+		"properties": {
+		  "action":  { "const": "TOOL_RETURN" },
+		  "tool":    { "type": "string" },
+		  "result":  { "type": "string" },
+		  "success": { "type": "boolean" }
+		},
+		"additionalProperties": false
+	  },
+  
+	  {
+		"title": "DELEGATE_TASK",
+		"type": "object",
+		"required": ["action", "agent", "caller_agent", "reason", "user_input"],
+		"properties": {
+		  "action":       { "const": "DELEGATE_TASK" },
+		  "agent":        { "type": "string" },
+		  "caller_agent": { "type": "string" },
+		  "reason":       { "type": "string" },
+		  "user_input":   { "type": "string" }
+		},
+		"additionalProperties": false
+	  },
+  
+	  {
+		"title": "DELEGATE_BACK",
+		"type": "object",
+		"required": ["action", "return_to_agent", "return_from_agent", "reason", "success"],
+		"properties": {
+		  "action":          { "const": "DELEGATE_BACK" },
+		  "return_to_agent":   { "type": "string" },
+		  "return_from_agent": { "type": "string" },
+		  "reason":            { "type": "string" },
+		  "success":           { "type": "boolean" }
+		},
+		"additionalProperties": false
+	  }
+	]
+  }
+  
