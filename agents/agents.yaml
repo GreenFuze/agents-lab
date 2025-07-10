@@ -1,5 +1,5 @@
 agents:
-    zeus:
+    Zeus:
         model: codeqwen1.5-7b-chat
         seed_prompts_file: null # not required if there's schema or grammar
         grammar: null # not required if there's schema
@@ -21,6 +21,15 @@ agents:
         prompts: # appended from first to last
             - prompts/base_system.md # always first
             - prompts/responses.md # always second
+            - prompts/create_agent.md # for zeus, as the agent that creates other agents
         tools: # prompts for tools will be automatically generated and appended
-            - file_tools.read_file
-            - file_tools.write_file
+            - file_tools.execute_command
+            - agent_management.get_available_models
+            - agent_management.get_available_tools
+            - agent_management.get_available_prompts
+            - agent_management.get_existing_agents
+            - agent_management.create_agent_prompt_file
+            - agent_management.create_seed_prompts_file
+            - agent_management.add_agent
+            - agent_management.check_schema_file_exists
+            - agent_management.check_grammar_file_exists

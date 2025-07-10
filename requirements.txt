@@ -1,0 +1,11 @@
+pydantic~=2.11.5
+chromadb~=1.0.11
+psutil~=5.9.8
+langgraph~=0.4.8
+langchain-core~=0.3.65
+langchain~=0.3.25
+langchain_community
+requests~=2.32.3
+langchain-openai~=0.3.23
+colorama~=0.4.6
+lmstudio

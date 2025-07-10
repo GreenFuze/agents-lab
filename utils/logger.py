@@ -13,6 +13,7 @@ AI_TO_AI_COLOR = colorama.Fore.LIGHTMAGENTA_EX
 TOOL_COLOR = colorama.Fore.WHITE
 SUCCESS_COLOR = colorama.Fore.GREEN
 THINK_COLOR = colorama.Fore.CYAN + colorama.Back.BLACK
+AI_TO_USER_COLOR = colorama.Fore.MAGENTA + colorama.Fore.LIGHTBLUE_EX
 RESET_COLOR = colorama.Style.RESET_ALL
 
 def log(message: str):
@@ -56,5 +57,9 @@ def success(message: str):
     print(f"{SUCCESS_COLOR}[SUCCESS] {message}{RESET_COLOR}")
 
 def think(message: str):
-    """Prints a thinking/reasoning message."""
-    print(f"{THINK_COLOR}[THINK] {message}{RESET_COLOR}")
+	"""Prints a thinking/reasoning message."""
+	print(f"{THINK_COLOR}[THINK] {message}{RESET_COLOR}")
+
+def ai_to_user(message: str):
+	"""Prints an AI-to-user message."""
+	print(f"{AI_TO_USER_COLOR}[AI_TO_USER] {message}{RESET_COLOR}")

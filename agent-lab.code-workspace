@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.analysis.extraPaths": ["."],
+		"python.analysis.autoImportCompletions": true,
+		"python.terminal.activateEnvironment": true,
+		"python.analysis.include": ["**/*.py"],
+		"python.analysis.exclude": ["**/node_modules", "**/__pycache__"],
+		"python.analysis.autoSearchPaths": true,
+		"python.analysis.typeCheckingMode": "basic",
+		"python.analysis.diagnosticMode": "workspace",
+	}
+}

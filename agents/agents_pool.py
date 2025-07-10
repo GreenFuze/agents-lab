@@ -16,9 +16,12 @@ class AgentsPool:
 		self._load_agents_config()
 
 	def get_agent(self, name: str) -> Agent:
-		if name not in self.pool:
-			raise AgentNotFound(f"Agent {name} not found")
-		return self.pool[name]
+		# Case-insensitive search for agent
+		name_lower = name.lower()
+		for agent_name, agent in self.pool.items():
+			if agent_name.lower() == name_lower:
+				return agent
+		raise AgentNotFound(f"Agent {name} not found")
 
 	def add_agent(self, name: str, agent: Agent):
 		self.pool[name] = agent
@@ -56,11 +59,20 @@ class AgentsPool:
 			inference_config_data = agent_config.get('inference_config')
 			assert inference_config_data is not None, f"No inference config for agent {agent_name}. Please add an 'inference_config' field in the agents.yaml file."
 			
+			# Get full paths for grammar and schema files if specified
+			grammar_path = None
+			if agent_config.get('grammar'):
+				grammar_path = self._get_full_file_path(agent_config['grammar'])
+			
+			schema_path = None
+			if agent_config.get('schema'):
+				schema_path = self._get_full_file_path(agent_config['schema'])
+			
 			inference_config = InferenceConfig(
 				max_tokens=inference_config_data.get('max_tokens'),
 				temperature=inference_config_data.get('temperature'),
-				grammar=agent_config.get('grammar'),
-				schema=agent_config.get('schema'),
+				grammar=grammar_path,
+				schema=schema_path,
 				stop_strings=inference_config_data.get('stop_strings')
 			)
    
@@ -176,6 +188,19 @@ class AgentsPool:
 		return combined_prompt.strip()
 
 
+	def _get_full_file_path(self, file_path: str) -> str:
+		"""Get full absolute path for a file relative to the agents directory"""
+		if not file_path:
+			return ""
+		
+		agents_dir = os.path.dirname(__file__)
+		full_path = os.path.join(agents_dir, file_path)
+		
+		if not os.path.exists(full_path):
+			raise FileNotFoundError(f"File not found: {full_path}")
+		
+		return os.path.abspath(full_path)
+
 	def _load_seed_prompts(self, seed_prompts_file: str) -> list:
 		"""Load seed prompts from file"""
 		if not seed_prompts_file:
@@ -195,4 +220,4 @@ class AgentsPool:
 # load agents.yaml in the same directory as this file
 CurrentAgentsPool = AgentsPool(os.path.join(os.path.dirname(__file__), 'agents.yaml'))
 
-
+CurrentAgent: Agent|None = None

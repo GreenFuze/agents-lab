@@ -125,6 +125,11 @@ class Agent:
 
 		logger.info(f"Initialized agent {self.name}")
 	
+	@property
+	def context_window_size(self) -> int:
+		"""Get the context window size for this agent"""
+		return self.model_info.context_length
+	
  
 	def get_context_usage(self) -> Tuple[int, float]:
 		"""Get current context window usage"""
@@ -146,7 +151,7 @@ class Agent:
 	def get_context_display(self) -> str:
 		"""Get context usage display string"""
 		tokens, percentage = self.get_context_usage()
-		return f"[{self.name} {percentage:.1f}%/{self.model_info.context_length}]"
+		return f"[{self.name} {percentage:.1f}%/{self.context_window_size}]"
 
 	
 	def should_summarize_history(self) -> bool:
@@ -289,7 +294,12 @@ class Agent:
 			
 			full_prompt = model.apply_prompt_template(messages)
 			full_response = self.send_llm(model, full_prompt, refine_config)
-			cleaned_response = self.cleanup_response(full_response)
+   
+			# cleanup called only where there's no schema or grammar
+			if self.inference_config.grammar is None and self.inference_config.schema is None:
+				cleaned_response = self.cleanup_response(full_response)
+			else:
+				cleaned_response = full_response
 			
 			# Parse the JSON response
 			response_json = json.loads(cleaned_response)
@@ -420,7 +430,10 @@ class Agent:
 					full_prompt = model.apply_prompt_template(chat_messages)
         
 					full_response = self.send_llm(model, full_prompt, inference_config)
-					cleanedup_response = self.cleanup_response(full_response)
+					if self.inference_config.grammar is None and self.inference_config.schema is None:
+						cleanedup_response = self.cleanup_response(full_response)
+					else:
+						cleanedup_response = full_response
 				
 					response_json = json.loads(cleanedup_response)
 
